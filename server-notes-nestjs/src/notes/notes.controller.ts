@@ -1,73 +1,70 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Body,
+  Patch,
+  Delete,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { NotesService } from './notes.service';
+import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('Notes')
 @Controller('notes')
-export class NoteController {
-  constructor(private readonly noteService: NotesService) {}
+export class NotesController {
+  constructor(private readonly notesService: NotesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new note' })
-  @ApiBody({ schema: { example: { title: 'New Note', content: 'Isi Note' } } })
+  @ApiOperation({ summary: 'Membuat note baru' })
+  @ApiBody({
+    schema: { example: { title: 'Meeting', content: 'Diskusi proyek' } },
+  })
   create(@Body('title') title: string, @Body('content') content: string) {
-    return this.noteService.create(title, content);
+    return this.notesService.create(title, content);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get All Notes' })
+  @ApiOperation({ summary: 'Mengambil semua note aktif' })
   findAll() {
-    return this.noteService.findAll();
+    return this.notesService.findAll();
+  }
+
+  @Get('trash')
+  @ApiOperation({ summary: 'Mengambil semua note di trash' })
+  findTrashed() {
+    return this.notesService.findTrashed();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a specific note by ID' })
-  @ApiParam({ name: 'id', example: 1, description: 'Note ID' })
+  @ApiOperation({ summary: 'Mengambil note berdasarkan ID' })
+  @ApiParam({ name: 'id', example: 1 })
   findOne(@Param('id') id: string) {
-    return this.noteService.findOne(+id);
+    return this.notesService.findOne(+id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Edit an existing note' })
-  @ApiParam({ name: 'id', example: 1, description: 'Note ID' })
-  @ApiBody({
-    schema: { example: { title: 'Updated Title', content: 'Updated content' } },
-  })
+  @ApiOperation({ summary: 'Mengedit note' })
+  @ApiBody({ schema: { example: { title: 'Update', content: 'Isi update' } } })
   update(
     @Param('id') id: string,
     @Body('title') title: string,
     @Body('content') content: string,
   ) {
-    return this.noteService.update(+id, title, content);
+    return this.notesService.update(+id, title, content);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Move a note to trash' })
-  @ApiParam({ name: 'id', example: 1, description: 'Note ID' })
+  @ApiOperation({ summary: 'Menghapus note (soft delete)' })
   delete(@Param('id') id: string) {
-    this.noteService.delete(+id);
-    return { message: `Note ${id} moved to trash` };
+    this.notesService.delete(+id);
+    return { message: `Note ${id} dipindahkan ke trash` };
   }
 
   @Patch(':id/restore')
-  @ApiOperation({ summary: 'Restore a note from trash' })
-  @ApiParam({ name: 'id', example: 1, description: 'Note ID' })
+  @ApiOperation({ summary: 'Mengembalikan note dari trash' })
   restore(@Param('id') id: string) {
-    this.noteService.restore(+id);
-    return { message: `Note ${id} restored` };
-  }
-
-  @Get('/trash')
-  @ApiOperation({ summary: 'Get all notes in trash' })
-  findTrashed() {
-    return this.noteService.findTrashed();
+    this.notesService.restore(+id);
+    return { message: `Note ${id} dikembalikan` };
   }
 }
